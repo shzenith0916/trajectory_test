@@ -112,5 +112,3 @@ if __name__ == '__main__':
 # video_dir = '/home/sh_rsrehab/AKAS_Test/data/video_data/23년2월'
 # 출력 이미지를 저장할 디렉토리
 # output_dir = 'home/sh_rsrehab/AKAS_Test/data/extract_img'
-
-# https://pioneergu.github.io/posts/sys.stdout-redirection/
