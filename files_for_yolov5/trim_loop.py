@@ -33,7 +33,7 @@ def trim_video(input_file, output_file, start, end):
 if __name__ == '__main__':
     excel_path = "//mnt/c/Users/USER/Downloads/ffmpeg/VFSS_video_list_김소현_궤적용.xlsx"
     try:
-        xlsx_data = pd.read_excel(excel_path, engine='openpyxl', sheet_name='VFSS_2023년5월')
+        xlsx_data = pd.read_excel(excel_path, engine='openpyxl', sheet_name='VFSS_2023년월')
         df = pd.DataFrame(xlsx_data)
         
         video_path = "//mnt/c/Users/USER/Downloads/ffmpeg"
