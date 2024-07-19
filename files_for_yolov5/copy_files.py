@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 import os
 import shutil
 import pandas as pd
@@ -35,7 +38,7 @@ def copy_files(root_dir, dest_dir, video_names):
             
             # Copy the video file
             shutil.copy2(source, destination)
-            print("Copied: %s to %s" % (source, destination)
+            print("Copied: %s to %s" % (source, destination))
 
 # Run the function
 copy_files(origin_dir, final_dir, video_names)
