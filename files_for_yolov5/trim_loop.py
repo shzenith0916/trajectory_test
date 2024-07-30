@@ -6,7 +6,6 @@ import pandas as pd
 
 def rename_files(directory):
     if not os.path.exists(directory):
-        print(f"Directory not found: {directory}")
         return
     
     for file in os.listdir(directory):
@@ -31,7 +30,7 @@ def trim_video(input_file, output_file, start, end):
 
 
 if __name__ == '__main__':
-    excel_path = "//mnt/c/Users/USER/Downloads/ffmpeg/VFSS_video_list_김소현_궤적용.xlsx"
+    excel_path = os.path.join(os.getcwd(),"VFSS_video_list_김소현_궤적용.xlsx")
     try:
         xlsx_data = pd.read_excel(excel_path, engine='openpyxl', sheet_name='VFSS_2023년월')
         df = pd.DataFrame(xlsx_data)
