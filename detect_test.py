@@ -344,7 +344,6 @@ def run(
                     try: 
                       # intercept_x and intercept_y are numpy array.
                       intercept_x, intercept_y = crosspoint(m1, c1, m2, c2)
-                      
 
                       # Change to the "scalar" format to calcaulate math.dist later
                       intercept_x_scalar = intercept_x.item() # Correctly converts to scalar(float)
@@ -361,7 +360,6 @@ def run(
 
                       # Horizontal line at the y-intersect
                       horizontal_start_point = (int(intercept_x_scalar - distance), int(intercept_y_scalar))
-                      print("horizontal_start_point", horizontal_start_point)
                       horizontal_end_point = (int(intercept_x_scalar), int(intercept_y_scalar))
                       
                       # 보정된 설골 점 x,y 값을 위의 리스트에 저장
@@ -420,21 +418,64 @@ def run(
     ### 추가
     print("test printing hyoid_x_coor",hyoid_x_coor)
     print("test printing hyoid_y_coor",hyoid_y_coor)
+    # Diff calculation for directional change
+    dx=np.diff(hyoid_x_coor)
+    dy=np.diff(hyoid_y_coor)
+    # Min, Max points of x_coor list and y_coor list
+    min_x_idx = np.argmin(hyoid_x_coor)
+    max_x_idx = np.argmax(hyoid_x_coor)
+    min_y_idx = np.argmin(hyoid_y_coor)
+    max_y_idx = np.argmax(hyoid_y_coor)
 
     # 맨처음 명시한 리스트를 이용하여, 궤적용 빈 이미지에 파란 설골점 그리기. 
     # Ploting the points using the hyoid_x_coor and hyoid_y_coor lists. 
     plt.figure(figsize=(8,6))
-    plt.plot(hyoid_x_coor,hyoid_y_coor, marker='o', color='blue', linestyle='-', markersize=8, linewidth=2)
-    plt.title("Trajectory of vidoe:{}".format(stem))
-    plt.xlabel("X Coordinate of Hyoid")
-    plt.xlabel("Y Coordinate of Hyoid")
-    plt.gca().invert_yaxis()  # Invert the y-axis to match image coordinate system
+    plt.plot(hyoid_x_coor, hyoid_y_coor, 'b-', marker='o', color='cadetblue', linestyle='-', markersize=3, linewidth=1)
+    # 방향표시 Add arrows to show direction (quiver plot)
+    for i in range(len(dx)):
+        plt.quiver(hyoid_x_coor[i], hyoid_y_coor[i], dx[i], dy[i], angles='xy', scale_units='xy', scale=1, color='darksalmon', width=0.003)
+    # YOLO 객체 탐지 결과 데이터를 이미지 좌표 시스템에서 수학 좌표 시스템으로 바꾸기
+    # Invert the y axis to match image coordinate system
+    plt.gca().invert_yaxis()
+
+    # Highlighting the start point (A point)
+    plt.scatter(hyoid_x_coor[0], hyoid_y_coor[0], color='orange', s=100, label='Start')
+    plt.annotate('Start(A)', (hyoid_x_coor[0], hyoid_y_coor[0]), textcoords='offset points', xytext=(20,10), ha='center', fontsize=10)
+    # Highlighting the end point (D point)
+    plt.scatter(hyoid_x_coor[-1],hyoid_y_coor[-1], color='seagreen', s=100, label='End')
+    plt.annotate('End', (hyoid_x_coor[-1],hyoid_y_coor[-1]), textcoords='offset points', xytext=(20,10), ha='center', fontsize=10)
+   
+    # C point
+    plt.scatter(hyoid_x_coor[min_x_idx], hyoid_y_coor[min_x_idx], color='peru', s=80, label='C_point')
+    plt.annotate('X_Min(C)', (hyoid_x_coor[min_x_idx], hyoid_y_coor[min_x_idx]), textcoords='offset points', xytext=(60,-30), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.8"))
+    # Max x point 
+    plt.scatter(hyoid_x_coor[max_x_idx], hyoid_y_coor[max_x_idx], color='gold', s=80, label='A_point')
+    plt.annotate('X_Max', (hyoid_x_coor[max_x_idx], hyoid_y_coor[max_x_idx]), textcoords='offset points', xytext=(-10,20), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"))
+    # B point
+    plt.scatter(hyoid_x_coor[min_y_idx], hyoid_y_coor[min_y_idx], color='orchid', s=80, label='B_point')
+    plt.annotate('Y_Max(B)', (hyoid_x_coor[min_y_idx], hyoid_y_coor[min_y_idx]), textcoords='offset points', xytext=(40,-10), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"))
+    # D Point
+    plt.scatter(hyoid_x_coor[max_y_idx], hyoid_y_coor[max_y_idx], color='royalblue', s=80, label='D_point')
+    plt.annotate('Y_Min(D)', (hyoid_x_coor[max_y_idx], hyoid_y_coor[max_y_idx]), textcoords='offset points', xytext=(30,30), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.8"))
+
+    # Set up the plot 
+    #margin=15
+    #x_min, x_max = min(hyoid_x_coor) - margin, max(hyoid_x_coor) + margin
+    #y_min, y_max = min(hyoid_y_coor) - margin, max(hyoid_y_coor) + margin
+    # Set inverted limits directly
+    #plt.xlim(x_min, x_max)
+    #plt.ylim(y_min, y_max)
+
+    # Adjust y-axis labels to increase upwards
+    plt.yticks(range(min(hyoid_y_coor), max(hyoid_y_coor) + 1, 10), 
+           range(max(hyoid_y_coor), min(hyoid_y_coor) - 1, -10))
+
+    title = stem[0:8] + '_' + stem[-10:-8]
+    plt.title("Trajectory of {}".format(title))
+    plt.xlabel("X Coordinate of Hyoid", fontsize=10)
+    plt.ylabel("Y Coordinate of Hyoid", fontsize=10)
     plt.grid(True)
-    margin=10
-    x_min, x_max = min(hyoid_x_coor) - margin, max(hyoid_x_coor) + margin
-    y_min, y_max = min(hyoid_y_coor) - margin, max(hyoid_y_coor) + margin
-    plt.xlim(x_min, x_max)
-    plt.ylim(y_min, y_max)
+    # Save the plot
     plt.savefig(trajectory_path)
     plt.close()
 
@@ -459,10 +500,11 @@ def run(
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
 ### 추가!! 
+
 def crosspoint(m1, c1, m2, c2):
     '''두 라인의 서로 만나는 점 계산
-      calculating the intersection point of two lines given their slopes m1,m2 and intercepts c1,c2'''
-    
+      calculating the intersection point of two lines given their slopes m1,m2 and intercepts c1,c2
+    ''' 
     # check if lines are parallel
     if m1 == m2:
         raise ValueError("The lines are parallel and do not intersect")
@@ -473,6 +515,11 @@ def crosspoint(m1, c1, m2, c2):
     return x, y
 
 def find_min_max_points(data_points):
+    '''
+    목뼈 경계상자들의 중심 포인트 좌표를 가지는 data_point에서 
+    y값이 최고, 최저 값을 가지는 좌표값 찾기
+    Find the max and min values from the list having Neck_Bone class
+    '''
     # Ensure data_points is a NumPy array
     data_points = np.array(data_points)
 
