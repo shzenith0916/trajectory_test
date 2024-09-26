@@ -30,7 +30,7 @@ if __name__ == '__main__':
     input_file = input()
 
     file_name, file_extension = os.path.splitext(input_file)
-    output_file = file_name + "(1)" + file_extension
+    output_file = file_name + "_trimmed" + file_extension
 
     # Call the method
     trim_video(input_file, output_file, st, et)

@@ -3,22 +3,13 @@ import os
 import argparse
 import sys
 from datetime import datetime
-
-
-def rename_files_with_spaces(directory):
-    for filename in os.listdir(directory):
-        if " " in filename:
-            new_filename = filename.replace(" ", "")
-            os.rename(os.path.join(directory, filename), os.path.join(directory, new_filename))
-            print(f"Renamed {filename} to {new_filename} ")
-        else:
-            print(f"No spaces in filename: {filename}")
+from rename_file import rename_and_extract_info
 
 
 def extract_frames(video_dir, output_dir):
 
-    # Rename files to remove spaces
-    rename_files_with_spaces(video_dir)
+    # Rename files
+    rename_and_extract_info(video_dir)
 
     # 동영상 파일을 검색
     video_files = [f for f in os.listdir(

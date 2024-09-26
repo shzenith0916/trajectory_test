@@ -136,6 +136,7 @@ def run(
     # Create a white blank image with the same dimensions as the original image
     #new_h, new_w = int(imgsz[0] / 2.0), int(imgsz[1] / 2.0)
     #blank_image = 255 * np.ones(shape=(new_h,new_w,3), dtype=np.uint8)
+    
     ### 추가 끝
 
     # Dataloader
@@ -307,7 +308,7 @@ def run(
                     data_points = np.array(neck_centers, dtype=np.float32)
                     #print("neck bone center points:", data_points)
                     
-                    # Use the method to find sublists with min and max y-values of neck bone bboxes
+                    # Use the predefined method to find sublists with min and max y-values of neck bone bboxes
                     sublist_with_min, sublist_with_max = find_min_max_points(data_points)
 
                     # Fit line to the points, DIST_L2 -> euclidean distance
