@@ -23,6 +23,11 @@ def label_file_rewrite(label_file_list):
         with open(file, 'w') as f:
             f.writelines(filtered_lines)
 
+        # 파일이 비어있으면 삭제
+        if len(filtered_lines) == 0:
+            os.remove(file)
+            print(f"빈 파일 삭제됨: {file}")
+
 
 if __name__ == '__main__':
 
