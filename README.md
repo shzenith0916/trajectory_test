@@ -65,7 +65,7 @@ AKAS/
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/shzenith0916/trajectory_test.git
+    git clone http://192.168.200.5:3000/pangyo_rnd/AKAS.git
     cd AKAS
     ```
 
@@ -98,7 +98,7 @@ AKAS/
 yolo predict model=/path/to/your/yolov8_model.pt source=/path/to/your/video.avi
 
 # Using a custom script
-python ultralytics/custom_detect.py --weights /path/to/your/yolov8_model.pt --source=/path/to/your/video.avi
+python ultralytics/custom_weights /path/to/your/yolov8_model.pt --source=/path/to/your/video.avi
 ```
 
 #### (Legacy) YOLOv5
