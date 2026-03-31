@@ -1,23 +1,16 @@
-# AI-based Kinematic Analysis Software for Dysphagia Diagnosis
-
-AKAS (Automatic Kinematic Analysis Software)는 비디오 투시 삼킴 검사(VFSS) 영상을 AI 기술로 분석하여, 연하장애(삼킴 장애) 진단을 보조하는 자동 운동학 분석 소프트웨어입니다.
-
-This project, AKAS-01, is an automated analysis program for video fluoroscopic swallowing studies (VFSS). It utilizes AI technology to enable the automated, quantitative analysis of VFSS, aiming to verify the accuracy of dysphagia diagnosis and develop a systematic diagnostic framework.
-
----
-
 ## 📖 Table of Contents
 
-- [AI-based Kinematic Analysis Software for Dysphagia Diagnosis](#ai-based-kinematic-analysis-software-for-dysphagia-diagnosis)
-  - [📖 Table of Contents](#-table-of-contents)
-  - [🎯 Introduction](#-introduction)
-  - [✨ Features](#-features)
-  - [📂 Project Structure](#-project-structure)
-  - [🛠 Installation](#-installation)
-  - [🚀 Usage](#-usage)
-      - [(Main) YOLOv8 / YOLOv11](#main-yolov8--yolov11)
-      - [(Legacy) YOLOv5](#legacy-yolov5)
-  - [📄 License](#-license)
+- [📖 Table of Contents](#-table-of-contents)
+- [🎯 Introduction](#-introduction)
+- [✨ Features](#-features)
+- [📂 Project Structure](#-project-structure)
+- [🛠 Installation](#-installation)
+- [🚀 Usage](#-usage)
+  - [(Main) 2단계 추론 파이프라인 — `inference_run.py`](#main-2단계-추론-파이프라인--inference_runpy)
+  - [단일 모델 궤적 탐지 — `custom_detect.py`](#단일-모델-궤적-탐지--custom_detectpy)
+  - [모델 학습](#모델-학습)
+  - [(Legacy) YOLOv5](#legacy-yolov5)
+- [📄 License](#-license)
 
 ---
 
@@ -36,27 +29,38 @@ However, the primary models from Ultralytics used in this project are under the 
 ## ✨ Features
 
 - **Multi-Model Object Detection**: `YOLOv5`, `YOLOv8`, `YOLOv11` 등 다양한 YOLO 아키텍처를 활용하여 VFSS 영상에서 설골(Hyoid Bone)과 경추(Neck Bone)를 탐지합니다.
+- **Two-Stage Detection Pipeline**: 1단계에서 설골/경추를 탐지한 뒤, 2단계에서 설골 주변을 크롭하여 bolus, epiglottis 등 세밀한 객체를 추가 탐지합니다.
 - **Trajectory Analysis**: 탐지된 설골의 움직임을 프레임별로 추적하고 궤적 데이터를 생성합니다.
 - **Movement Correction**: 경추의 움직임을 기준으로 설골의 움직임을 보정하여 머리 움직임의 영향을 최소화합니다.
 - **Quantitative Analysis**: 분석된 궤적 데이터를 CSV 파일로 저장하여 정량적인 비교 분석을 지원합니다.
+- **Stratified K-Fold Training**: Monte Carlo 기반 Repeated Stratified K-Fold 교차 검증을 통한 체계적 모델 학습을 지원합니다.
 - **Visualization**: 원본 영상에 분석 결과를 시각화하고, 설골의 전체 이동 경로를 별도의 궤적 이미지로 생성합니다.
 
 ## 📂 Project Structure
 
-본 프로젝트는 서로 다른 기반을 가진 YOLO 버전을 실험하기 위해, 각 버전의 공식 프로젝트 폴더 구조를 유지하고 있습니다.
-
 ```
-AKAS/
-├── ultralytics/      # (Main) YOLOv8, v11 등 최신 모델 연구 개발을 위한 메인 폴더
-│   ├── engine/
-│   ├── models/
-│   └── custom_detect.py
+trajectory_test연구용/
 │
-├── yolov5/           # (Legacy) 초기 YOLOv5 연구 아카이브
-│   ├── data/
-│   ├── models/
-│   ├── notebooks/    # Jupyter Notebook을 활용한 학습 및 테스트 기록
+├── ultralytics/                  # (Main) YOLOv8, v11 등 최신 모델 연구
+│   ├── custom_detect.py          # 설골-경추 궤적 탐지 (단일 모델)
+│   ├── inference_run.py          # 2단계 VFSS 추론 파이프라인
+│   ├── two_stage_utils.py        # 2단계 추론 유틸리티
+│   ├── detect.py                 # 기본 탐지 스크립트
+│   ├── train.py                  # 모델 학습 스크립트
+│   ├── stratified_kfold_train.py # Stratified K-Fold 교차 검증 학습
+│   ├── plot_trajectories.py      # 궤적 CSV → 시각화 플롯
+│   ├── extract_label3.py         # 라벨 데이터 추출
+│   └── relabel_label3.py         # 라벨 데이터 재분류
+│
+├── yolov5/                       # (Legacy) 초기 YOLOv5 연구 아카이브
+│   ├── detect.py
 │   └── detect_refactor.py
+│
+├── preprocessing/                # 데이터 전처리
+│   ├── label_parse/              # 라벨 파싱, bbox 변환, 정리
+│   └── until_extract_img/        # 영상 트리밍, 프레임 추출, 파일 정리
+│
+├── references/                   # 참고 스크립트 및 알고리즘 문서
 │
 └── README.md
 ```
@@ -65,8 +69,8 @@ AKAS/
 
 1.  **Clone the repository:**
     ```bash
-    git clone http://192.168.200.5:3000/pangyo_rnd/AKAS.git
-    cd AKAS
+    git clone https://github.com/shzenith0916/trajectory_test.git
+    cd AKAS-01
     ```
 
 2.  **Create a virtual environment (recommended):**
@@ -87,35 +91,51 @@ AKAS/
 
 ## 🚀 Usage
 
-각 YOLO 버전에 맞는 탐지 스크립트를 사용하여 분석을 실행합니다.
+### (Main) 2단계 추론 파이프라인 — `inference_run.py`
 
-#### (Main) YOLOv8 / YOLOv11
-
-`ultralytics` 프레임워크의 `predict` 모드를 사용하거나 커스텀 스크립트를 실행합니다.
+Stage 1에서 설골/경추를 탐지하고, Stage 2에서 설골 주변을 크롭하여 세밀한 객체를 추가 탐지합니다.
 
 ```bash
-# Using the standard 'yolo' command
-yolo predict model=/path/to/your/yolov8_model.pt source=/path/to/your/video.avi
-
-# Using a custom script
-python ultralytics/custom_weights /path/to/your/yolov8_model.pt --source=/path/to/your/video.avi
+python ultralytics/inference_run.py \
+  --weights-stage1 /path/to/stage1_model.pt \
+  --weights-stage2 /path/to/stage2_model.pt \
+  --source /path/to/video.avi \
+  --conf-stage1 0.6 \
+  --conf-stage2 0.3 \
+  --visualize
 ```
 
-#### (Legacy) YOLOv5
+자세한 인자 설명은 [ultralytics/README.md](ultralytics/README.md)를 참고하세요.
 
-`yolov5/detect_refactor.py` 스크립트를 사용합니다.
+### 단일 모델 궤적 탐지 — `custom_detect.py`
+
+2단계 없이 설골-경추 궤적만 확인하고 싶을 때 사용합니다.
 
 ```bash
-python yolov5/detect_refactor.py --weights /path/to/your/yolov5_model.pt --source /path/to/your/video.avi
+python ultralytics/custom_detect.py \
+  --weights /path/to/model.pt \
+  --source /path/to/video.avi
 ```
 
-실행 결과는 각 프로젝트 폴더(`ultralytics/runs/detect/`, `yolov5/runs/detect/`) 내에 저장됩니다.
+### 모델 학습
+
+```bash
+# 단일 학습
+python ultralytics/train.py
+
+# Stratified K-Fold 교차 검증
+python ultralytics/stratified_kfold_train.py
+```
+
+### (Legacy) YOLOv5
+
+```bash
+python yolov5/detect_refactor.py --weights /path/to/yolov5_model.pt --source /path/to/video.avi
+```
+
+실행 결과는 각 프로젝트 폴더의 `runs/detect/` 내에 저장됩니다.
 
 ## 📄 License
 
 This project is licensed under the AGPL-3.0 License. See the `LICENSE` file for details.
-
-
-
-
 
