@@ -5,10 +5,17 @@ import pandas as pd
 import cv2
 import numpy as np
 import math
-import matplotlib.pyplot as plt
 from pathlib import Path
 from ultralytics import YOLO
 from ultralytics.utils.files import increment_path
+import sys
+import os
+
+# 상위 디렉토리를 Python 경로에 추가
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 
 # 추가 함수: crosspoint, find_min_max_points
 
@@ -35,96 +42,16 @@ def find_min_max_points(data_points):
 
 def remove_korean(filename):
     """
-    한글이 포함된 파일명에서 한글을 제거합니다.
+    한글이 포함된 파일명에서 한글과 공백을 제거합니다.
     """
-    return re.sub('[ㄱ-ㅎㅏ-ㅣ가-힣]+', '', filename)
+    # 한글 제거
+    cleaned = re.sub('[ㄱ-ㅎㅏ-ㅣ가-힣]+', '', filename)
+    # 공백 제거
+    cleaned = re.sub(r'\s+', '', cleaned)
+    return cleaned
 
 
-def plot_trajectory(x_coords, y_coords, save_dir, base_filename, title_label, filename_suffix, line_color='cadetblue', quiver_color='darksalmon'):
-    """
-    주어진 좌표 리스트를 사용하여 궤적 그래프를 생성하고 저장합니다.
-    """
-    if not x_coords or not y_coords:
-        print(f"No data to plot for {title_label}")
-        return
-
-    x_coor = np.array(x_coords)
-    y_coor = np.array(y_coords)
-
-    dx = np.diff(x_coor)
-    dy = np.diff(y_coor)
-
-    min_x_idx = np.argmin(x_coor)
-    max_x_idx = np.argmax(x_coor)
-    min_y_idx = np.argmin(y_coor)
-    max_y_idx = np.argmax(y_coor)
-
-    plt.figure(figsize=(8, 6))
-    plt.plot(x_coor, y_coor, 'b-', marker='o',
-             color=line_color, linestyle='-', markersize=3, linewidth=1)
-
-    if len(dx) > 0:
-        plt.quiver(x_coor[:-1], y_coor[:-1], dx, dy, angles='xy',
-                   scale_units='xy', scale=1.5, color=quiver_color, width=0.003)
-
-    plt.gca().invert_yaxis()
-
-    plt.scatter(x_coor[0], y_coor[0],
-                color='orange', s=100, label='Start')
-    plt.annotate('Start(A)', (x_coor[0], y_coor[0]), textcoords='offset points', xytext=(
-        20, 10), ha='center', fontsize=10)
-    plt.scatter(x_coor[-1], y_coor[-1],
-                color='seagreen', s=100, label='End')
-    plt.annotate('End', (x_coor[-1], y_coor[-1]),
-                 textcoords='offset points', xytext=(0, 10), ha='center', fontsize=10)
-    plt.scatter(x_coor[min_x_idx], y_coor[min_x_idx],
-                color='peru', s=80, label='X_Min_Point')
-    plt.annotate('X_Min(C)', (x_coor[min_x_idx], y_coor[min_x_idx]), textcoords='offset points', xytext=(
-        60, -30), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.8"))
-    plt.scatter(x_coor[max_x_idx], y_coor[max_x_idx],
-                color='gold', s=80, label='X_Max_Point')
-    plt.annotate('X_Max', (x_coor[max_x_idx], y_coor[max_x_idx]), textcoords='offset points', xytext=(
-        -10, 20), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"))
-    plt.scatter(x_coor[min_y_idx], y_coor[min_y_idx],
-                color='orchid', s=80, label='Highest_Point')
-    plt.annotate('Highest Point(B)', (x_coor[min_y_idx], y_coor[min_y_idx]), textcoords='offset points', xytext=(
-        40, -10), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"))
-    plt.scatter(x_coor[max_y_idx], y_coor[max_y_idx],
-                color='darkblue', s=80, label='Lowest_Point')
-    plt.annotate('Lowest Point(D)', (x_coor[max_y_idx], y_coor[max_y_idx]), textcoords='offset points', xytext=(
-        30, 30), ha='center', arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.8"))
-
-    title = f"{title_label} - {base_filename}"
-    plt.title(title)
-    plt.xlabel("X Coordinate of Hyoid", fontsize=10)
-    plt.ylabel("Y Coordinate of Hyoid", fontsize=10)
-    plt.grid(True)
-
-    trajectory_path = save_dir / f"{base_filename}{filename_suffix}"
-    plt.savefig(trajectory_path)
-    plt.close()
-    print(f"Trajectory plot saved to {trajectory_path}")
-
-
-def save_trajectories_to_csv(red_x, red_y, blue_x, blue_y, save_dir, base_filename):
-    """
-    주어진 궤적 좌표 리스트들을 pandas DataFrame으로 만들어 CSV 파일로 저장합니다.
-    """
-    # pandas Series를 사용하면 길이가 다른 리스트도 NaN으로 채워져 안전하게 DataFrame으로 만들 수 있습니다.
-    df = pd.DataFrame({
-        'red_dot_x': pd.Series(red_x),
-        'red_dot_y': pd.Series(red_y),
-        'blue_dot_x': pd.Series(blue_x),
-        'blue_dot_y': pd.Series(blue_y),
-    })
-
-    csv_path = save_dir / f"{base_filename}_trajectories.csv"
-    # 한글 경로/파일명 문제를 피하기 위해 encoding을 'utf-8-sig'로 지정
-    df.to_csv(csv_path, index=False, encoding='utf-8-sig')
-    print(f"Trajectories data saved to {csv_path}")
-
-
-def run(weights, source):
+def run(weights, source, conf=0.25):
     # 모델 로드
     model = YOLO(weights)
 
@@ -150,7 +77,7 @@ def run(weights, source):
     cap.release()  # 정보만 얻고 해제
 
     # 모델 예측 실행 (스트림 모드로 메모리 효율성 확보)
-    results = model.predict(source, stream=True)
+    results = model.predict(source, conf=conf, stream=True)
 
     # 궤적을 그리기 위한 리스트 초기화
     hyoid_x_list = []
@@ -280,20 +207,31 @@ def run(weights, source):
     vid_writer.release()
     print(f"Custom annotated video saved to {output_video_path}")
 
-    # 궤적 Plotting
-    plot_trajectory(hyoid_x_list, hyoid_y_list, save_dir, clean_stem,
-                    title_label="Trajectory of Detected Hyoid (Red Dot)",
-                    filename_suffix="_red_dot_trajectory.jpg",
-                    line_color='cadetblue', quiver_color='darksalmon')
+    # Red trajectory CSV 저장 (설골 원본 좌표)
+    if hyoid_x_list:
+        red_df = pd.DataFrame({
+            'frame': range(len(hyoid_x_list)),
+            'red_x': hyoid_x_list,
+            'red_y': hyoid_y_list,
+        })
+        red_csv_path = save_dir / f"{clean_stem}_red_trajectories.csv"
+        red_df.to_csv(red_csv_path, index=False, encoding='utf-8-sig')
+        print(f"Red trajectories saved to {red_csv_path}")
+    else:
+        print("WARNING: 설골이 탐지되지 않아 red trajectory CSV를 저장하지 않습니다.")
 
-    plot_trajectory(blue_dot_x_list, blue_dot_y_list, save_dir, clean_stem,
-                    title_label="Trajectory of Corrected Hyoid (Blue Dot)",
-                    filename_suffix="_blue_dot_trajectory.jpg",
-                    line_color='royalblue', quiver_color='mediumpurple')
-
-    # 궤적 데이터 CSV로 저장
-    save_trajectories_to_csv(hyoid_x_list, hyoid_y_list,
-                             blue_dot_x_list, blue_dot_y_list, save_dir, clean_stem)
+    # Blue trajectory CSV 저장 (보정된 설골 좌표)
+    if blue_dot_x_list:
+        blue_df = pd.DataFrame({
+            'frame': range(len(blue_dot_x_list)),
+            'blue_x': blue_dot_x_list,
+            'blue_y': blue_dot_y_list,
+        })
+        blue_csv_path = save_dir / f"{clean_stem}_blue_trajectories.csv"
+        blue_df.to_csv(blue_csv_path, index=False, encoding='utf-8-sig')
+        print(f"Blue trajectories saved to {blue_csv_path}")
+    else:
+        print("WARNING: 보정된 설골 좌표가 없어 blue trajectory CSV를 저장하지 않습니다.")
 
     print("Custom detection script finished.")
 
@@ -305,10 +243,12 @@ def parse_opt():
                         default='yolov8n.pt', help='model path or triton URL')
     parser.add_argument('--source', type=str, required=True,
                         help='source directory for images or videos')
-    # parser.add_argument('--source', type=str, default='0', help='source default to webcam')
+    parser.add_argument('--conf', type=float, default=0.25,
+                        help='confidence threshold (default: 0.25)')
+    opt = parser.parse_args()
     return opt
 
 
 if __name__ == '__main__':
     opt = parse_opt()
-    run(weights=opt.weights, source=opt.source)
+    run(weights=opt.weights, source=opt.source, conf=opt.conf)
