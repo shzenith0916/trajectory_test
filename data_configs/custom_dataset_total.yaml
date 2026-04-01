@@ -1,0 +1,27 @@
+# YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
+# 
+# Example usage: python train.py --img1280 --batch8 --epochs 100 --data '/data/custom_data.yaml' --cfg 'models/yolov5s.yaml' --weights yolov5s.pt --device 0 s--name 1st_train_0 --resume train_exp8_best.pt
+
+# parent
+# ├── yolov5
+# └── data
+#     └── images  
+#     └── labels  
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+
+path: /content/drive/MyDrive/yolov5_detection/yolov5/data  # 절대 경로로 root dir
+train: /content/drive/MyDrive/yolov5_detection/yolov5/data/train/images # train images (relative to 'path') 
+val: /content/drive/MyDrive/yolov5_detection/yolov5/data/valid/images # val images (relative to 'path') 
+
+# 학습용 및 검증용 레이블 폴더는 자동으로 찾음 (images 폴더와 같은 위치의 labels 폴더)
+
+# number of classes
+nc: 4
+
+# Classes
+names:
+  0: hyoid_bone
+  1: neck_bone
+  2: vallecular_pouch
+  3: food

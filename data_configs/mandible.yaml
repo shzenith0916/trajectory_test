@@ -1,0 +1,25 @@
+# YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
+
+# parent
+# ├── yolov5
+#   └── data
+#     └──하악에가려짐
+#     └──하악에안가려짐
+
+
+
+path: ./data # dataset root dir
+train: ../train # train images (relative to 'path') 
+val: ../하악에가려짐 # val images (relative to 'path') 
+test: # test images (optional)
+
+
+# number of classes
+nc: 4
+
+# Classes
+names:
+  0: hyoid_bone
+  1: neck_bone
+  2: food_locate
+  3: food
