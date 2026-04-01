@@ -1,0 +1,59 @@
+--- a/utils/plots.py
++++ b/utils/plots.py
+@@ -210,6 +210,62 @@
+     annotator.im.save(fname)  # save
+ 
+ 
++### 추가
++
++def plot_single_image(image, targets, path=None, fname="image.jpg", names=None):
++    """Plots a single image with labels from YOLOv5 predictions or targets, saving to `fname`."""
++    if isinstance(image, torch.Tensor):
++        image = image.cpu().float().numpy()
++
++    c, h, w = image.shape
++
++    if np.max(image) <= 1:
++        image *= 255 # de-normalise (optional)
++
++    # Important: Convert image to uint8 to ensure compatibility with PIL
++    image = image.astype(np.uint8)
++
++    # Convert image from [c,h,w] to [h,w,c] for visualization
++    if c == 3:
++        im = image.transpose(1, 2, 0)
++    else:
++        raise ValueError("Image channel size must be 3")
++    im_pil = Image.fromarray(im)
++
++    # prepare image for annotation
++    annotator = Annotator(im_pil, line_width=max(round( min(im.shape[:2])/100 ), 2),
++                            font_size=max(round(min(im.shape[:2]) / 40), 12),
++                            pil=True)
++
++    # Annotate
++    if path:
++        annotator.text([5, 5], text=Path(path).name[:40], txt_color=(220, 220, 220))
++    if len(targets) > 0:
++        boxes = xywh2xyxy(targets[:, 2:6]).T
++        classes = targets[:, 1].astype("int")
++        confidences = targets[:, 6]
++
++        if boxes.shape[1]:
++            if boxes.max() <= 1.01:
++                boxes[[0, 2]] *= w
++                boxes[[1, 3]] *= h
++                for j, box in enumerate(boxes.T.tolist()):
++                    cls = classes[j]
++                    conf = confidences[j]
++                    color = colors(cls)
++                    cls_name = names[cls] if names else cls
++                    label = f"{cls_name} {conf:.2f}"
++                    annotator.box_label(box, label, color=color)
++
++    annotator.im.save(fname)  # save
++
++### 추가 끝
++
++
+ def plot_lr_scheduler(optimizer, scheduler, epochs=300, save_dir=""):

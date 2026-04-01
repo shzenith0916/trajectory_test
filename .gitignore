@@ -42,19 +42,13 @@ docker-compose.yml
 # =================================================================
 # Datasets and Large Project Files (프로젝트별 데이터셋)
 # =================================================================
-# yolov5 datasets
-/yolov5/data/
-
-# ultralytics datasets
-/ultralytics/data/FOOD_DETECT/
-/ultralytics/data/NHC_DETECT/
-/ultralytics/data/ALL/
-/ultralytics/data/TEST_DATA/
-/ultralytics/FOOD_DETECT.zip
-/ultralytics/NHC_DETECT.zip
-
-# Other general datasets folder
 /datasets/
+
+# =================================================================
+# Cloned repos (pip install로 대체, 로컬에서만 사용)
+# =================================================================
+/ultralytics/
+/yolov5/
 
 # =================================================================
 # Outputs, Logs, and Models (결과물, 로그, 모델)
