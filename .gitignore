@@ -98,3 +98,4 @@ docker-compose.yml
 /preprocessing/until_extract_img/count_distinct_person.ipynb
 /preprocessing/until_extract_img/copy_yolodata.ipynb
 /preprocessing/until_extract_img/VFSS_video_list_김소현_궤적용.xlsx
+/yolov5/notebooks
