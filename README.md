@@ -41,28 +41,39 @@ However, the primary models from Ultralytics used in this project are under the 
 ```
 trajectory_test연구용/
 │
-├── ultralytics/                  # (Main) YOLOv8, v11 등 최신 모델 연구
-│   ├── custom_detect.py          # 설골-경추 궤적 탐지 (단일 모델)
-│   ├── inference_run.py          # 2단계 VFSS 추론 파이프라인
+├── ultralytics_custom/           # (Main) 연구 코드 — YOLOv8/v11 기반 추론·학습
+│   ├── inference_run.py          # 2단계 VFSS 추론 파이프라인 (메인)
+│   ├── custom_detect.py          # 단일 모델 설골-경추 궤적 탐지
 │   ├── two_stage_utils.py        # 2단계 추론 유틸리티
 │   ├── detect.py                 # 기본 탐지 스크립트
 │   ├── train.py                  # 모델 학습 스크립트
 │   ├── stratified_kfold_train.py # Stratified K-Fold 교차 검증 학습
 │   ├── plot_trajectories.py      # 궤적 CSV → 시각화 플롯
 │   ├── extract_label3.py         # 라벨 데이터 추출
-│   └── relabel_label3.py         # 라벨 데이터 재분류
+│   ├── relabel_label3.py         # 라벨 데이터 재분류
+│   └── further_study/            # 궤적 후처리·실험 스크립트
 │
-├── yolov5/                       # (Legacy) 초기 YOLOv5 연구 아카이브
-│   ├── detect.py
-│   └── detect_refactor.py
+├── ultralytics_notebooks/        # 연구용 Jupyter 노트북 (탐지/실험)
+│
+├── yolov5_custom/                # (Legacy) 초기 YOLOv5 커스텀 코드
+│   ├── detect_refactor.py
+│   ├── detect_bori.py
+│   └── notebooks/                # 학습/검증 노트북
 │
 ├── preprocessing/                # 데이터 전처리
-│   ├── label_parse/              # 라벨 파싱, bbox 변환, 정리
+│   ├── label_parse/              # 라벨 파싱(XML→txt), bbox 변환·정리
 │   └── until_extract_img/        # 영상 트리밍, 프레임 추출, 파일 정리
 │
-├── references/                   # 참고 스크립트 및 알고리즘 문서
-│
+├── data_configs/                 # 데이터셋 정의 YAML (custom_dataset*.yaml 등)
+├── patches/                      # yolov5 커스텀 패치 (detect / plots)
+├── requirements.txt
+├── setup_guide.md
 └── README.md
+
+# ── 아래는 .gitignore 처리되어 저장소에 포함되지 않음 (로컬에서만 사용) ──
+#   ultralytics/   Ultralytics 프레임워크 (pip install 또는 clone)
+#   yolov5/        YOLOv5 프레임워크 (clone)
+#   *.pt 가중치 · runs/ 결과물 · *.avi 영상 · datasets/
 ```
 
 ## 🛠 Installation

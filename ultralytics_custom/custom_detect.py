@@ -122,8 +122,8 @@ def run(weights, source, conf=0.25):
             sublist_with_min, sublist_with_max = find_min_max_points(
                 data_points)
 
-            [vx, vy, x0, y0] = cv2.fitLine(
-                data_points, cv2.DIST_L2, 0, 0.01, 0.01)
+            [vx, vy, x0, y0] = (float(v) for v in cv2.fitLine(
+                data_points, cv2.DIST_L2, 0, 0.01, 0.01).reshape(-1))
 
             m1 = vy / vx if vx != 0 else float('inf')
 
@@ -149,9 +149,8 @@ def run(weights, source, conf=0.25):
                     c2 = hyoid_bone_center[1] - m2 * hyoid_bone_center[0]
 
                     try:
-                        intercept_x, intercept_y = crosspoint(m1, c1, m2, c2)
-                        intercept_x_scalar = intercept_x.item()
-                        intercept_y_scalar = intercept_y.item()
+                        intercept_x_scalar, intercept_y_scalar = crosspoint(
+                            m1, c1, m2, c2)
 
                         cv2.line(im0, hyoid_bone_center, (int(intercept_x_scalar), int(
                             intercept_y_scalar)), (0, 255, 0), 2)
